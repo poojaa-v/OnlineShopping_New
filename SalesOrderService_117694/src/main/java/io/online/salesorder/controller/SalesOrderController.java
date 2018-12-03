@@ -46,7 +46,7 @@ public class SalesOrderController {
 		System.out.println("Inside Controller getOrderDesc >>>>" + salesOrderDetails.getOrderDesc());
 
 		//Validate customer by verifying the table “customer_sos” with cust_id --- Starts
-		boolean custBool;
+		boolean custBool = false;
 		List<CustomerSOS> customerSOSList = customerSOSRepository.findAll();
 		if (customerSOSList != null && customerSOSList.size() > 0){
 			for (int ii=0 ; ii < customerSOSList.size() ; ii++) {
@@ -55,19 +55,21 @@ public class SalesOrderController {
 				if (customerSOSList.get(ii).getCustId() != null && salesOrderDetails.getCustId() != null){
 					if (customerSOSList.get(ii).getCustId().equals(salesOrderDetails.getCustId())) {
 						custBool = true;
-					} else {
-						//Customer not available -- Exception to be thrown
-						System.out.println("<<<<<<<<<Customer not available 1111>>>>");
-						salesOrderDetails.setErrVar("custErr");
-						throw new Exception();
-						
-					}
+					} 
 				} else {
 					//Customer not available -- Exception to be thrown
 					System.out.println("<<<<<<<<<Customer not available 2222>>>>");
 					salesOrderDetails.setErrVar("custErr");
 					throw new Exception();
 				}
+			}
+			
+			if(!custBool) {
+				//Customer not available -- Exception to be thrown
+				System.out.println("<<<<<<<<<Customer not available 1111>>>>");
+				salesOrderDetails.setErrVar("custErr");
+				throw new Exception();
+					
 			}
 		} else {
 			System.out.println("<<<<<<<<<Customer not available 3333>>>>");
