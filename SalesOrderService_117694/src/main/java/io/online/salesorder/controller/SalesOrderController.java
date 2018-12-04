@@ -3,6 +3,8 @@ package io.online.salesorder.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -40,25 +42,27 @@ public class SalesOrderController {
 	@Autowired
 	private LoadBalancerClient loadBalancerClient;
 	
+	Logger logger = LoggerFactory.getLogger(SalesOrderController.class); 
+	
 	@PostMapping("/orders")
 	@HystrixCommand(fallbackMethod="custItemFallback") 	 
 	public String insertSalesOrderDetails(@RequestBody SalesOrderDetails salesOrderDetails) throws Exception {
-		System.out.println("Inside Controller getOrderDesc >>>>" + salesOrderDetails.getOrderDesc());
+		logger.debug( "Inside Controller getOrderDesc >>>>" + salesOrderDetails.getOrderDesc());
 
 		//Validate customer by verifying the table “customer_sos” with cust_id --- Starts
 		boolean custBool = false;
 		List<CustomerSOS> customerSOSList = customerSOSRepository.findAll();
 		if (customerSOSList != null && customerSOSList.size() > 0){
 			for (int ii=0 ; ii < customerSOSList.size() ; ii++) {
-				System.out.println("customerSOSList.get(ii).getCustId()" + customerSOSList.get(ii).getCustId());
-				System.out.println("salesOrderDetails.getCustId()" + salesOrderDetails.getCustId());
+				logger.debug( "customerSOSList.get(ii).getCustId()" + customerSOSList.get(ii).getCustId());
+				logger.debug( "salesOrderDetails.getCustId()" + salesOrderDetails.getCustId());
 				if (customerSOSList.get(ii).getCustId() != null && salesOrderDetails.getCustId() != null){
 					if (customerSOSList.get(ii).getCustId().equals(salesOrderDetails.getCustId())) {
 						custBool = true;
 					} 
 				} else {
 					//Customer not available -- Exception to be thrown
-					System.out.println("<<<<<<<<<Customer not available 2222>>>>");
+					logger.debug( "<<<<<<<<<Customer not available 2222>>>>");
 					salesOrderDetails.setErrVar("custErr");
 					throw new Exception();
 				}
@@ -66,13 +70,13 @@ public class SalesOrderController {
 			
 			if(!custBool) {
 				//Customer not available -- Exception to be thrown
-				System.out.println("<<<<<<<<<Customer not available 1111>>>>");
+				logger.debug( "<<<<<<<<<Customer not available 1111>>>>");
 				salesOrderDetails.setErrVar("custErr");
 				throw new Exception();
 					
 			}
 		} else {
-			System.out.println("<<<<<<<<<Customer not available 3333>>>>");
+			logger.debug( "<<<<<<<<<Customer not available 3333>>>>");
 			salesOrderDetails.setErrVar("custErr");
 			throw new Exception();
 		}
@@ -81,7 +85,7 @@ public class SalesOrderController {
 		//Validate customer by verifying the table “customer_sos” with cust_id --- Ends
 		
 		// REST call to validate items by calling item service with item name -- itemByName ---Starts 
-		System.out.println("Before REST CALL >>>>");		
+		logger.debug( "Before REST CALL >>>>");		
 		RestTemplate restTemplate = new RestTemplate();
 		//String fetchItemUrl = "http://localhost:8082/items";
 		ResponseEntity<Item> response = null;
@@ -99,20 +103,20 @@ public class SalesOrderController {
 				itemName = salesOrderDetails.getItemNameList().get(i).getItemName();
 				item.setItemName(itemName);
 				response = restTemplate.getForEntity(fetchItemServiceUrl() + "/items/"+itemName, Item.class);
-				System.out.println("After REST CALL >>>>"+response.getBody());
+				logger.debug( "After REST CALL >>>>"+response.getBody());
 				itemName = response.getBody().getItemName();
 				totalPrice = totalPrice + response.getBody().getItemPrice();
 				fetchedItemList.add(item);
-				System.out.println("itemName>>>>" + itemName + "<<<<<");
+				logger.debug( "itemName>>>>" + itemName + "<<<<<");
 				if(itemName.equalsIgnoreCase(null) || itemName.equals("") || itemName.isEmpty()){
 					//Item details not available -- Exception to be thrown
-					System.out.println("<<<<<<<<<Item details not available 1111111 >>>");
+					logger.debug( "<<<<<<<<<Item details not available 1111111 >>>");
 					salesOrderDetails.setErrVar("itemErr");
 				}
 			}
 		} else {
 			//Item details not available -- Exception to be thrown
-			System.out.println("<<<<<<<<<Item not available >>>>");
+			logger.debug( "<<<<<<<<<Item not available >>>>");
 			salesOrderDetails.setErrVar("itemErr");
 		}
 
@@ -154,7 +158,7 @@ public class SalesOrderController {
 						
 					} else {
 						//Item details not available -- Exception to be thrown
-						System.out.println("<<<<<<<<<Item details not available 222222222 >>>");
+						logger.debug( "<<<<<<<<<Item details not available 222222222 >>>");
 						break;
 					}
 				}
@@ -174,7 +178,7 @@ public class SalesOrderController {
 
 
 	public void insertCustomerSOS(Customer customer) {
-		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<insertCustomerSOS>>>>>>>>>>>>>>>>>>>>>");
+		logger.debug( "<<<<<<<<<<<<<<<<<<<<<<<insertCustomerSOS>>>>>>>>>>>>>>>>>>>>>");
 		CustomerSOS customerSOS  = new CustomerSOS();
 		
 		customerSOS.setCustId((Integer.parseInt(customer.getId())));
@@ -188,20 +192,17 @@ public class SalesOrderController {
 	// This method is for implementing Ribbon - Client side load balancing
 	private String fetchItemServiceUrl() {
 		
-		System.out.println("Inside fetchItemServiceUrl");
-		
+		logger.debug( "Inside fetchItemServiceUrl");
 		ServiceInstance instance = loadBalancerClient.choose("item-service");
-		
-		System.out.println("After fetching instance in fetchItemServiceUrl");
-		
-		System.out.println("uri: {}" + instance.getUri().toString());
-		System.out.println("serviceId: {}" + instance.getServiceId());
+		logger.debug( "After fetching instance in fetchItemServiceUrl");
+		logger.debug( "uri: {}" + instance.getUri().toString());
+		logger.debug( "serviceId: {}" + instance.getServiceId());
 
 	    return instance.getUri().toString();
 	}
 	
 	public String custItemFallback(SalesOrderDetails salesOrderDetails) {
-		System.out.println("Inside custItemFallback method>>>>" + salesOrderDetails.getErrVar());
+		logger.debug( "Inside custItemFallback method>>>>" + salesOrderDetails.getErrVar());
 		if(salesOrderDetails.getErrVar() != null && salesOrderDetails.getErrVar().equalsIgnoreCase("custErr")) {
 			return "The customer ID is not available. Please enter a valid customer id.";
 		} else {

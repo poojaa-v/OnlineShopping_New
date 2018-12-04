@@ -3,6 +3,7 @@ package io.online.customer.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import io.online.customer.domain.Customer;
 import io.online.customer.repository.CustomerDetailsRepository;
 
 @RestController
+@RefreshScope
 public class CustomerDetailsController {
 
 	@Autowired

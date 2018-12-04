@@ -12,7 +12,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import io.online.customer.controller.CustomerDetailsController;
 import io.online.customer.domain.Customer;
 
 @Repository
@@ -22,7 +21,7 @@ public class CustomerDetailsRepository {
 	private final String SQL_INSERT = "insert into customer_117694(id,email,first_name,last_name) values(?,?,?,?)";
 
 	private final JdbcTemplate jdbcTemplate;
-	Logger logger = LoggerFactory.getLogger(CustomerDetailsController.class);	
+	Logger logger = LoggerFactory.getLogger(CustomerDetailsRepository.class);	
 
 	@Autowired
 	public CustomerDetailsRepository(JdbcTemplate jdbcTemplate) {

@@ -4,11 +4,14 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import io.online.item.controller.ItemDetailsController;
 import io.online.item.domain.Item;
 
 @Repository
@@ -19,6 +22,8 @@ public class ItemDetailsRepository {
 
 	private final JdbcTemplate jdbcTemplate;
 
+	Logger logger = LoggerFactory.getLogger(ItemDetailsController.class);	
+	
 	@Autowired
 	public ItemDetailsRepository(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
@@ -39,10 +44,10 @@ public class ItemDetailsRepository {
 		List <Item> itemsList = null;
 
 		try {
-			System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<Inside getCustomerDetails Repository>>>>>>>>>>>>>>>>>>>>>");
+			logger.debug("<<<<<<<<<<<<<<<<<<<<<<<<Inside getCustomerDetails Repository>>>>>>>>>>>>>>>>>>>>>");
 			itemsList = new ArrayList<Item>(); 
 			itemsList = jdbcTemplate.query(GET_ALL_ITEMS_QUERY, rowMapper);
-			System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<itemsList>>>>>>>>>>>>>>>>>>>>>" + itemsList);
+			logger.debug("<<<<<<<<<<<<<<<<<<<<<<<<itemsList>>>>>>>>>>>>>>>>>>>>>" + itemsList);
 
 		} catch (Exception e){
 			e.printStackTrace();
@@ -54,7 +59,7 @@ public class ItemDetailsRepository {
 	public Item itemByName(String itemName) {
 		List <Item> itemsList = null;
 		try {
-			System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<Inside getCustomerDetails Repository itemByName>>>>>>>>>>>>>>>>>>>>> + itemName");
+			logger.debug("<<<<<<<<<<<<<<<<<<<<<<<<Inside getCustomerDetails Repository itemByName>>>>>>>>>>>>>>>>>>>>> + itemName");
 			itemsList = new ArrayList<Item>(); 
 			//return this.jdbcTemplate.queryForObject(SQL_QUERY_BY_NAME, new Object[]{itemName}, rowMapper);
 			itemsList = jdbcTemplate.query(SQL_QUERY_BY_NAME, rowMapper, new Object[]{itemName});
