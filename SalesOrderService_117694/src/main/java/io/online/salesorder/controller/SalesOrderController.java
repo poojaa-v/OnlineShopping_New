@@ -193,7 +193,7 @@ public class SalesOrderController {
 	private String fetchItemServiceUrl() {
 		
 		logger.debug( "Inside fetchItemServiceUrl");
-		ServiceInstance instance = loadBalancerClient.choose("item-service");
+		ServiceInstance instance = loadBalancerClient.choose("item-service-117694");
 		logger.debug( "After fetching instance in fetchItemServiceUrl");
 		logger.debug( "uri: {}" + instance.getUri().toString());
 		logger.debug( "serviceId: {}" + instance.getServiceId());
